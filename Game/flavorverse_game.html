@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Duy Fierri: Flavorverse Saga</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #fff8f0; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #d94f04; }
+        #game { display: flex; flex-direction: column; align-items: center; }
+        #stats, #enemy, #hand { margin: 20px; padding: 10px; border: 2px solid #d94f04; border-radius: 10px; background: #fff; width: 80%; }
+        .card { display: inline-block; margin: 10px; padding: 10px; border: 1px solid #333; border-radius: 8px; background: #ffe4c4; cursor: pointer; }
+        .card:hover { background: #ffd4a3; }
+        .enemy { font-weight: bold; color: #b30000; }
+        .stat { margin: 5px 0; }
+        button { padding: 10px 20px; font-size: 16px; background: #d94f04; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #a63a02; }
+    </style>
+</head>
+<body>
+    <h1>Duy Fierri: Flavorverse Saga</h1>
+    <div id="game">
+        <div id="stats">
+            <h2>Flavor Stats</h2>
+            <div class="stat" id="spicecraft">Spicecraft: 10</div>
+            <div class="stat" id="umami">Umami: 10</div>
+            <div class="stat" id="sweetness">Sweetness: 10</div>
+            <div class="stat" id="heat">Heat Resistance: 10</div>
+        </div>
+        <div id="enemy">
+            <h2>Enemy Encounter</h2>
+            <div class="enemy" id="enemyName">The Mayo Lich</div>
+            <div id="enemyHP">HP: 30</div>
+        </div>
+        <div id="hand">
+            <h2>Your Hand</h2>
+            <div id="cards"></div>
+        </div>
+        <button onclick="drawCards()">Draw Cards</button>
+    </div>
+
+    <script>
+        const sampleCards = [
+            { name: "Donkey Sauce Overdrive", effect: () => changeStat("spicecraft", 5) },
+            { name: "Ghost Pepper Palm", effect: () => damageEnemy(10) },
+            { name: "Broth Bind", effect: () => changeStat("umami", 5) },
+            { name: "Garnish Gambit", effect: () => changeStat("sweetness", 5) },
+            { name: "Reverse Sear", effect: () => damageEnemy(7) },
+            { name: "Sugar Snap Counter", effect: () => changeStat("heat", 5) }
+        ];
+
+        const enemies = [
+            { name: "The Mayo Lich", hp: 30 },
+            { name: "The Palate Void", hp: 40 },
+            { name: "Queen Fondant", hp: 35 },
+            { name: "The Michelin Hydra", hp: 50 }
+        ];
+
+        let currentEnemy = { ...enemies[0] };
+
+        function updateEnemyDisplay() {
+            document.getElementById("enemyName").innerText = currentEnemy.name;
+            document.getElementById("enemyHP").innerText = "HP: " + currentEnemy.hp;
+        }
+
+        function changeStat(stat, amount) {
+            const statEl = document.getElementById(stat);
+            let current = parseInt(statEl.innerText.split(": ")[1]);
+            current += amount;
+            statEl.innerText = stat.charAt(0).toUpperCase() + stat.slice(1) + ": " + current;
+        }
+
+        function damageEnemy(amount) {
+            currentEnemy.hp -= amount;
+            if (currentEnemy.hp <= 0) {
+                alert(currentEnemy.name + " defeated!");
+                currentEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+            }
+            updateEnemyDisplay();
+        }
+
+        function drawCards() {
+            const hand = document.getElementById("cards");
+            hand.innerHTML = "";
+            const drawn = [];
+            while (drawn.length < 3) {
+                const card = sampleCards[Math.floor(Math.random() * sampleCards.length)];
+                drawn.push(card);
+            }
+            drawn.forEach(card => {
+                const cardEl = document.createElement("div");
+                cardEl.className = "card";
+                cardEl.innerText = card.name;
+                cardEl.onclick = () => {
+                    card.effect();
+                    cardEl.style.display = "none";
+                };
+                hand.appendChild(cardEl);
+            });
+        }
+
+        updateEnemyDisplay();
+    </script>
+</body>
+</html>
