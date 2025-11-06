@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://flavorverse.example.com/schemas/relic.schema.json",
+  "title": "Flavorverse Relic",
+  "description": "Schema for relics in the Flavorverse",
+  "type": "object",
+  "required": ["id", "name", "rarity", "description"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "rarity": {
+      "type": "string",
+      "enum": ["common", "uncommon", "rare", "legendary"]
+    },
+    "icon": {
+      "type": "string",
+      "maxLength": 4
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "passive": {
+      "type": "boolean",
+      "default": true
+    },
+    "stackable": {
+      "type": "boolean",
+      "default": false
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

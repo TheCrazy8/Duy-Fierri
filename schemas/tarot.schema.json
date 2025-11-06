@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://flavorverse.example.com/schemas/tarot.schema.json",
+  "title": "Flavorverse Tarot Card",
+  "description": "Schema for tarot cards in the Flavorverse",
+  "type": "object",
+  "required": ["id", "name", "suit", "upright", "reverse"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "suit": {
+      "type": "string",
+      "enum": ["Major", "Spices", "Herbs", "Sauces", "Grains"]
+    },
+    "upright": {
+      "type": "string",
+      "description": "Effect when drawn upright"
+    },
+    "reverse": {
+      "type": "string",
+      "description": "Effect when drawn reversed"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": ["common", "uncommon", "rare", "legendary"]
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 21,
+      "description": "Tarot number (for Major Arcana)"
+    }
+  }
+}
