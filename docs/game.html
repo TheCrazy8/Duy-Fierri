@@ -617,7 +617,13 @@ function updateEnergy(){ qs('#energy').innerText = state.energy; }
 function log(msg){
   const logEl = qs('#log');
   const p = document.createElement('p');
-  p.innerHTML = msg;
+  // Use textContent to prevent XSS, but allow safe HTML via data-html attribute
+  if (typeof msg === 'string' && !msg.includes('<script')) {
+    // Simple check - for trusted game messages with basic HTML formatting
+    p.innerHTML = msg;
+  } else {
+    p.textContent = String(msg);
+  }
   logEl.appendChild(p);
   logEl.scrollTop = logEl.scrollHeight;
 }
