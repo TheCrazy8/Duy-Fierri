@@ -1,105 +1,865 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Duy Fierri: Flavorverse Saga</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Duy Fierri: Interactive Flavorverse Lore Compendium & Mini Card Combat Demo">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #fff8f0; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #d94f04; }
-        #game { display: flex; flex-direction: column; align-items: center; }
-        #stats, #enemy, #hand { margin: 20px; padding: 10px; border: 2px solid #d94f04; border-radius: 10px; background: #fff; width: 80%; }
-        .card { display: inline-block; margin: 10px; padding: 10px; border: 1px solid #333; border-radius: 8px; background: #ffe4c4; cursor: pointer; }
-        .card:hover { background: #ffd4a3; }
-        .enemy { font-weight: bold; color: #b30000; }
-        .stat { margin: 5px 0; }
-        button { padding: 10px 20px; font-size: 16px; background: #d94f04; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #a63a02; }
+        :root {
+            --bg: #fff8f0;
+            --accent: #d94f04;
+            --accent-dark: #a63a02;
+            --panel: #ffffff;
+            --panel-alt: #ffe4c4;
+            --border: #d94f04;
+            --text-dark: #2b1a12;
+            --radius: 14px;
+            --shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+        header {
+            padding: 30px 20px 10px;
+            text-align: center;
+            background: linear-gradient(140deg,#ffeed8 0%,#ffe1c2 45%,#ffd0a3 100%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem,5vw,3.3rem);
+            letter-spacing: .5px;
+            color: var(--accent);
+            text-shadow: 0 2px 4px rgba(0,0,0,.08);
+        }
+        nav#quickNav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        nav#quickNav a {
+            text-decoration: none;
+            padding: 8px 14px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 40px;
+            font-size: .85rem;
+            transition: background .25s;
+            box-shadow: 0 2px 6px rgba(0,0,0,.15);
+        }
+        nav#quickNav a:hover { background: var(--accent-dark); }
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 25px 20px 80px;
+        }
+        .grid {
+            display: grid;
+            gap: 25px;
+        }
+        @media (min-width: 1100px) {
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grid-3 {
+                grid-template-columns: repeat(3,1fr);
+            }
+        }
+
+        section {
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px 24px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        section h2 {
+            margin: 0 0 14px;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-dark);
+        }
+        .tagline {
+            font-style: italic;
+            font-size: .9rem;
+            opacity: .85;
+        }
+        p { margin: 6px 0 12px; }
+        ul, ol { margin: 8px 0 16px 24px; }
+        li { margin: 4px 0; }
+
+        /* Lore Tabs */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .tabs button {
+            background: var(--panel-alt);
+            border: 1px solid var(--accent);
+            color: var(--text-dark);
+            padding: 7px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: .8rem;
+            font-weight: 600;
+            transition: background .2s, transform .2s;
+        }
+        .tabs button.active {
+            background: var(--accent);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,.25);
+        }
+        .tab-panel { display: none; animation: fade .35s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fade { from {opacity:0; transform: translateY(8px);} to {opacity:1; transform: translateY(0);} }
+
+        .lore-box {
+            background: #fff7ec;
+            border: 1px solid #f3c28c;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin: 10px 0 14px;
+        }
+        .flex-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .mini-card {
+            background: var(--panel-alt);
+            border: 1px solid #b05a05;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: .75rem;
+            flex: 1 1 140px;
+            box-shadow: 0 2px 5px rgba(0,0,0,.1);
+            position: relative;
+        }
+        .mini-card h4 {
+            margin: 0 0 4px;
+            font-size: .8rem;
+        }
+        .rarity { font-size: .65rem; letter-spacing: .5px; font-weight: 700; }
+        .rarity.common { color: #3e3e3e; }
+        .rarity.uncommon { color: #0b6e2d; }
+        .rarity.rare { color: #004c94; }
+        .rarity.legendary { color: #8e006b; }
+
+        /* Game module */
+        #game {
+            margin-top: 40px;
+        }
+        #combatWrapper {
+            display: grid;
+            gap: 18px;
+        }
+        @media (min-width: 960px) {
+            #combatWrapper {
+                grid-template-columns: 340px 1fr 320px;
+            }
+        }
+        .panel {
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 14px 16px 20px;
+            box-shadow: var(--shadow);
+        }
+        .panel h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--accent-dark);
+        }
+        .stat-line { display:flex; justify-content:space-between; margin:4px 0; font-size:.85rem; }
+        #log {
+            max-height: 220px;
+            overflow-y: auto;
+            font-size: .75rem;
+            padding-right: 4px;
+        }
+        #log p { margin: 2px 0 4px; }
+        .card {
+            display:inline-block;
+            margin: 8px;
+            padding: 10px 12px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: #ffe4c4;
+            cursor: pointer;
+            min-width: 150px;
+            font-size: .8rem;
+            position: relative;
+            transition: background .2s, transform .2s;
+        }
+        .card:hover { background: #ffd4a3; transform: translateY(-3px); }
+        .cost-badge {
+            position: absolute;
+            top: -6px; right: -6px;
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 7px;
+            font-size: .65rem;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,.3);
+        }
+        button.primary {
+            padding: 12px 22px;
+            font-size: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,.25);
+            transition: background .25s;
+        }
+        button.primary:hover { background: var(--accent-dark); }
+        button.small {
+            font-size: .75rem;
+            padding: 6px 10px;
+            background: #333;
+            color:#fff;
+            border:none;
+            border-radius: 6px;
+            cursor:pointer;
+        }
+        .enemy-name { font-weight: bold; color: #b30000; }
+        .status-tags span {
+            display:inline-block;
+            background:#ffcf9d;
+            padding:2px 7px;
+            margin:2px 4px 2px 0;
+            border-radius: 5px;
+            font-size:.6rem;
+            letter-spacing:.5px;
+        }
+
+        /* Search & Filters */
+        .filter-bar {
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin:14px 0 6px;
+        }
+        .filter-bar input, .filter-bar select {
+            padding:8px 10px;
+            border:1px solid var(--accent);
+            border-radius:8px;
+            font-size:.8rem;
+            background:#fff7ec;
+        }
+        .highlight {
+            background: linear-gradient(90deg,#ffe1c2 0%,#ffd4a3 100%);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 40px 20px;
+            text-align:center;
+            font-size:.75rem;
+            opacity:.75;
+        }
+        .sr-only { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
     </style>
 </head>
 <body>
+<header>
     <h1>Duy Fierri: Flavorverse Saga</h1>
-    <div id="game">
-        <div id="stats">
-            <h2>Flavor Stats</h2>
-            <div class="stat" id="spicecraft">Spicecraft: 10</div>
-            <div class="stat" id="umami">Umami: 10</div>
-            <div class="stat" id="sweetness">Sweetness: 10</div>
-            <div class="stat" id="heat">Heat Resistance: 10</div>
+    <p class="tagline">“Taste is truth. Spice is struggle. Sauce is salvation.”</p>
+    <nav id="quickNav" aria-label="Quick navigation">
+        <a href="#character">Character</a>
+        <a href="#timeline">Saga</a>
+        <a href="#powers">Powers</a>
+        <a href="#cults">Cults</a>
+        <a href="#biology">Biology</a>
+        <a href="#realms">Realms</a>
+        <a href="#codex">Codex</a>
+        <a href="#mythology">Mythology</a>
+        <a href="#combat">Combat Styles</a>
+        <a href="#vehicles">Vehicles</a>
+        <a href="#singularity">Singularity</a>
+        <a href="#tarot">Tarot</a>
+        <a href="#game">Game Demo</a>
+    </nav>
+</header>
+
+<main>
+    <!-- CHARACTER ORIGIN -->
+    <section id="character">
+        <h2>🌶️ Duy Fierri, Lord of Spicetown</h2>
+        <p><strong>Origin:</strong> Born in a volcano-fed food truck during a habanero eclipse—infused with molten flavor and destined to wage eternal war against blandness.</p>
+        <div class="grid grid-2">
+            <div class="lore-box">
+                <h3 style="margin-top:0;">Signature Look</h3>
+                <ul>
+                    <li>Flame-patterned trench coat woven from ghost pepper silk.</li>
+                    <li>Sunglasses functioning as multi-spectrum spice detectors.</li>
+                    <li>Hair sculpted like a jalapeño detonation.</li>
+                </ul>
+            </div>
+            <div class="lore-box">
+                <h3 style="margin-top:0;">Core Personality</h3>
+                <ul>
+                    <li>Speaks exclusively in layered food metaphors.</li>
+                    <li>Sees each meal as a battle between blandness & boldness.</li>
+                    <li>Once grilled a dragon and plated it with chipotle aioli.</li>
+                </ul>
+            </div>
         </div>
-        <div id="enemy">
-            <h2>Enemy Encounter</h2>
-            <div class="enemy" id="enemyName">The Mayo Lich</div>
-            <div id="enemyHP">HP: 30</div>
+    </section>
+
+    <!-- SAGA TIMELINE -->
+    <section id="timeline">
+        <h2>📜 Flavorverse Saga Timeline</h2>
+        <ol>
+            <li><strong>Duy Fierri (Original):</strong> Birth & rise from Spicetown; fights the Blandocalypse.</li>
+            <li><strong>Duy Fierri 2: Electric Boogaloo:</strong> Faces Chef Static—rogue AI digitizing taste. Gains Electric Tongue, Flavor Pulse, and chaotic Donkey Sauce Overdrive upgrade.</li>
+            <li><strong>Duy Fierri 3: Spicebreaker:</strong> Battles the Seasoning Singularity preventing flavor collapse.</li>
+            <li><strong>Duy Fierri 4: Forkageddon:</strong> Confronts The Palate Void devouring entire cuisines.</li>
+            <li><strong>Duy Fierri 5: Taste Eternal:</strong> Ascends as Flavor Warden; realms fracture into infinite taste shards.</li>
+            <li><strong>The Infinite Menu:</strong> Emergence of the OmniKitchen & cosmic critic rewriting reality.</li>
+            <li><strong>Menuverse Mayhem:</strong> Final transcendence—Duy approaches Chef Eternal form amid sentient cookbook war.</li>
+        </ol>
+        <div class="lore-box">
+            <strong>Notable Variants:</strong>
+            <ul>
+                <li>Duy Noirri – monochrome realm outlaw wielding Black Garlic.</li>
+                <li>Duy Fierri X – cyber-chef from 3099 with plasma grills.</li>
+                <li>Flavorgeist – ultimate metaphysical state rewriting culinary laws.</li>
+            </ul>
         </div>
-        <div id="hand">
-            <h2>Your Hand</h2>
-            <div id="cards"></div>
+    </section>
+
+    <!-- POWERS & GEAR -->
+    <section id="powers">
+        <h2>⚡ Powers & Flavorweaving</h2>
+        <div class="tabs" data-tab-group="powers">
+            <button class="active" data-tab="core">Core</button>
+            <button data-tab="electric">Electro-Flavor</button>
+            <button data-tab="ascendant">Ascendant</button>
+            <button data-tab="forbidden">Forbidden</button>
         </div>
-        <button onclick="drawCards()">Draw Cards</button>
-    </div>
+        <div class="tab-panel active" data-panel="core">
+            <ul>
+                <li><strong>Inferno Infusion:</strong> Plasma-level heating without structural damage.</li>
+                <li><strong>Flavor Teleportation:</strong> Relocates taste perception cross-dimensionally.</li>
+                <li><strong>Donkey Sauce 2.0:</strong> Banned in 12 galaxies; existential viscosity.</li>
+            </ul>
+        </div>
+        <div class="tab-panel" data-panel="electric">
+            <ul>
+                <li><strong>Electric Tongue:</strong> Converts voltage into spice amplitude.</li>
+                <li><strong>Flavor Pulse:</strong> Umami shockwave stunning flavor-resistant entities.</li>
+                <li><strong>Donkey Sauce Overdrive:</strong> +400% Chaos; sentient emulsification bursts.</li>
+            </ul>
+        </div>
+        <div class="tab-panel" data-panel="ascendant">
+            <ul>
+                <li><strong>Flavor Halo:</strong> Rotating ingredient orbit granting predictive palate sight.</li>
+                <li><strong>Ladle of Logos:</strong> Extracts truth essence from any broth context.</li>
+                <li><strong>Apron of Infinity:</strong> Woven from extinct cuisine timelines—temporal mise en place.</li>
+            </ul>
+        </div>
+        <div class="tab-panel" data-panel="forbidden">
+            <ul>
+                <li><strong>Reverse Sear of Destiny:</strong> Cooks metaphysical soul first; body later.</li>
+                <li><strong>Fold of Infinity:</strong> Pastry fold trapping cyclical time-layers.</li>
+                <li><strong>Garnish Gambit:</strong> Plating maneuver inducing existential reflection.</li>
+            </ul>
+        </div>
+    </section>
 
-    <script>
-        const sampleCards = [
-            { name: "Donkey Sauce Overdrive", effect: () => changeStat("spicecraft", 5) },
-            { name: "Ghost Pepper Palm", effect: () => damageEnemy(10) },
-            { name: "Broth Bind", effect: () => changeStat("umami", 5) },
-            { name: "Garnish Gambit", effect: () => changeStat("sweetness", 5) },
-            { name: "Reverse Sear", effect: () => damageEnemy(7) },
-            { name: "Sugar Snap Counter", effect: () => changeStat("heat", 5) }
-        ];
+    <!-- CULTS -->
+    <section id="cults">
+        <h2>🛐 Cults of Cuisine</h2>
+        <div class="grid grid-2">
+            <div class="lore-box">
+                <h3>The Order of the Salted Tongue</h3>
+                <p>Salt as divine primordial matrix. Ritual visions via sacred slab licking.</p>
+                <p><em>Leader:</em> High Sodium—crystalline mineral oracle.</p>
+            </div>
+            <div class="lore-box">
+                <h3>The Sugarveil</h3>
+                <p>Dessert zealots sacrificing bitterness for pure sweetness summoning.</p>
+                <p><em>Leader:</em> Queen Fondant—frosting tears & Candy Choir command.</p>
+            </div>
+            <div class="lore-box">
+                <h3>The Umami Depth</h3>
+                <p>Meditative broth monastics; soup is memory echo.</p>
+                <p><em>Leader:</em> Grandmaster Shiitake—telepathic sentient mushroom.</p>
+            </div>
+            <div class="lore-box">
+                <h3>The Flamebound</h3>
+                <p>Pyro-chefs channeling lava fury; Scorch Scrolls doctrine.</p>
+                <p><em>Leader:</em> Inferna—ghost pepper elemental of sizzle speech.</p>
+            </div>
+        </div>
+    </section>
 
-        const enemies = [
-            { name: "The Mayo Lich", hp: 30 },
-            { name: "The Palate Void", hp: 40 },
-            { name: "Queen Fondant", hp: 35 },
-            { name: "The Michelin Hydra", hp: 50 }
-        ];
+    <!-- BIOLOGY -->
+    <section id="biology">
+        <h2>🧬 Flavorverse Biology & Genetics</h2>
+        <ul>
+            <li><strong>Taste Glands (Third Nostril):</strong> Detect emotional seasoning—sadness = undercooked rice.</li>
+            <li><strong>Culinary Chromosomes:</strong> Capsaicin Codon (combat spice surge), Zest Spiral (citrus teleport), Umami Lobe (ancestral recipe retention).</li>
+            <li><strong>Taste Helices:</strong> Dual strand spice molecule braids enabling chemo-flavor translation.</li>
+            <li><strong>Flavor Receptors (Fingertips):</strong> Tactile gustation mapping terrain taste signatures.</li>
+            <li><strong>Palate Cortex:</strong> Vulnerable to rogue chef hacking; stores flavor memory nodes.</li>
+        </ul>
+    </section>
 
-        let currentEnemy = { ...enemies[0] };
+    <!-- REALMS -->
+    <section id="realms">
+        <h2>🧭 Hidden Realms & Dreamscapes</h2>
+        <div class="grid grid-2">
+            <div>
+                <h3>Material Flavor Realms</h3>
+                <ul>
+                    <li><strong>Pantry of Echoes:</strong> Whispering forgotten ingredients.</li>
+                    <li><strong>Freezer of Forever:</strong> Cryo-chef temporal stasis zone.</li>
+                    <li><strong>Boiling Borderlands:</strong> Lava lake soup dueling grounds.</li>
+                    <li><strong>Garnish Glacier:</strong> Microgreen tundra & edible snowflake drift.</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Dream Realms</h3>
+                <ul>
+                    <li><strong>Umami Abyss:</strong> Velvet broth ocean of lost recipe medusas.</li>
+                    <li><strong>Sour Spiral:</strong> Citrus cyclone of tang regrets.</li>
+                    <li><strong>Sweet Mirage:</strong> Illusionary confection unlocking hidden truths.</li>
+                    <li><strong>Spice Labyrinth:</strong> Heat hallucination maze—tests palate courage.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-        function updateEnemyDisplay() {
-            document.getElementById("enemyName").innerText = currentEnemy.name;
-            document.getElementById("enemyHP").innerText = "HP: " + currentEnemy.hp;
-        }
+    <!-- CODEX -->
+    <section id="codex">
+        <h2>📖 Codex Scovillia & Forbidden Recipes</h2>
+        <ul>
+            <li><strong>The Dish That Devours:</strong> Sentient stew reversing eater/eaten roles.</li>
+            <li><strong>The Infinite Omelette:</strong> Each fold housing a micro-universe.</li>
+            <li><strong>Risotto of Rebirth:</strong> 1,000-year stir unlocks immortality palate gates.</li>
+            <li><strong>Page 999:</strong> Recipe That Rewrites You—personal identity gastronomy.</li>
+            <li><strong>Page 13½:</strong> The Secret Ingredient Is You—autoconsumption metaphysics.</li>
+            <li><strong>Page ∞:</strong> The Dish Ending All Hunger—cosmic satiety collapse.</li>
+        </ul>
+    </section>
 
-        function changeStat(stat, amount) {
-            const statEl = document.getElementById(stat);
-            let current = parseInt(statEl.innerText.split(": ")[1]);
-            current += amount;
-            statEl.innerText = stat.charAt(0).toUpperCase() + stat.slice(1) + ": " + current;
-        }
+    <!-- MYTHOLOGY -->
+    <section id="mythology">
+        <h2>🏛️ Mythology of Flavor</h2>
+        <p><strong>Creation:</strong> The Tongue generated Five Primordial Flavors birthing First Chefs.</p>
+        <ul>
+            <li><strong>Chef Genesis:</strong> Planetary baking protocols.</li>
+            <li><strong>Chef Tempest:</strong> Ocean stirring lightning ladle.</li>
+            <li><strong>Chef Ember:</strong> Solar grilling molten spice skewers.</li>
+        </ul>
+        <h3>Flavormancer Orders</h3>
+        <ul>
+            <li><strong>Guild of Garnish:</strong> Micro-detail aesthetics; Tweezers of Precision.</li>
+            <li><strong>Searborn:</strong> Flame warriors with cast-iron gauntlet dialect.</li>
+            <li><strong>Brothbound:</strong> Simmering silence ramen-bone temples.</li>
+        </ul>
+        <h3>Taste Archetypes</h3>
+        <ul>
+            <li><strong>Bold</strong> (Duy core) – thrives in spice chaos.</li>
+            <li><strong>Subtle</strong> – nuance layering savants.</li>
+            <li><strong>Wild</strong> – reckless fusion brilliance/disaster swings.</li>
+            <li><strong>Nostalgic</strong> – memory-channeling comfort invocation.</li>
+        </ul>
+    </section>
 
-        function damageEnemy(amount) {
-            currentEnemy.hp -= amount;
-            if (currentEnemy.hp <= 0) {
-                alert(currentEnemy.name + " defeated!");
-                currentEnemy = enemies[Math.floor(Math.random() * enemies.length)];
-            }
-            updateEnemyDisplay();
-        }
+    <!-- COMBAT -->
+    <section id="combat">
+        <h2>🥋 Culinary Combat Styles</h2>
+        <div class="flex-cards" id="combatStyles">
+            <!-- Populated by JS -->
+        </div>
+    </section>
 
-        function drawCards() {
-            const hand = document.getElementById("cards");
-            hand.innerHTML = "";
-            const drawn = [];
-            while (drawn.length < 3) {
-                const card = sampleCards[Math.floor(Math.random() * sampleCards.length)];
-                drawn.push(card);
-            }
-            drawn.forEach(card => {
-                const cardEl = document.createElement("div");
-                cardEl.className = "card";
-                cardEl.innerText = card.name;
-                cardEl.onclick = () => {
-                    card.effect();
-                    cardEl.style.display = "none";
-                };
-                hand.appendChild(cardEl);
+    <!-- VEHICLES -->
+    <section id="vehicles">
+        <h2>🚀 Spicecraft & Mobility</h2>
+        <ul>
+            <li><strong>Spicecraft (Sentient Food Truck):</strong> Flavor fusion core & tactical plating console.</li>
+            <li><strong>Grill Mode:</strong> Sizzling asphalt thermal wake.</li>
+            <li><strong>Blender Mode:</strong> Dimension spin at smoothie angular velocity.</li>
+            <li><strong>Sous-Vehicle Mode:</strong> Deploys Torquejaw as knife/noodle hybrid cycle.</li>
+        </ul>
+    </section>
+
+    <!-- SINGULARITY -->
+    <section id="singularity">
+        <h2>🧬 Flavorverse Singularity & Menuverse</h2>
+        <p><strong>Menuverse:</strong> Sentient infinite cookbook—each page births a timeline when turned.</p>
+        <ul>
+            <li><strong>Pages of Possibility:</strong> Universe instantiation triggers Tastewave ripples.</li>
+            <li><strong>Index of Intuition:</strong> Whispers cravings pre-awareness.</li>
+            <li><strong>Binding of Balance:</strong> Structural anti-entropy fiber; ripping causes flavor collapse.</li>
+        </ul>
+        <h3>Five Forbidden Flavors</h3>
+        <ul>
+            <li><strong>Ecliptique:</strong> Flavor of endings—final perfect bite resonance.</li>
+            <li><strong>Velocisavor:</strong> Temporal acceleration—condensed simmer chronology.</li>
+            <li><strong>Nullsalt:</strong> Anti-flavor erasure—used in exorcisms.</li>
+            <li><strong>Cravemint:</strong> Infinite hunger induction—interdicted across dimensions.</li>
+            <li><strong>Echoflame:</strong> Reverse burn—cool tongue, ignite soul.</li>
+        </ul>
+        <h3>Chef Eternal Regalia</h3>
+        <ul>
+            <li>Apron of Infinity • Flavor Halo • Ladle of Logos</li>
+            <li>Donkey Sauce Apotheosis Blend: Semi-divine sentient emulsifier.</li>
+        </ul>
+    </section>
+
+    <!-- TAROT -->
+    <section id="tarot">
+        <h2>🃏 Tarot of Taste</h2>
+        <p>Major & Minor Arcana define cosmic culinary archetypes. Four suits (Spices, Herbs, Sauces, Grains) channel elemental flavor metaphysics.</p>
+        <div class="filter-bar">
+            <input type="text" id="tarotSearch" placeholder="Search arcana...">
+            <select id="tarotSuit">
+                <option value="">All Suits</option>
+                <option value="Spices">Spices</option>
+                <option value="Herbs">Herbs</option>
+                <option value="Sauces">Sauces</option>
+                <option value="Grains">Grains</option>
+                <option value="Major">Major</option>
+            </select>
+        </div>
+        <div class="flex-cards" id="tarotDeck"></div>
+    </section>
+
+    <!-- GAME DEMO -->
+    <section id="game">
+        <h2>🎮 Mini Game: Flavor Skirmish</h2>
+        <p>This lightweight prototype demonstrates card drawing, stat manipulation, enemy cycling, and status effect scaffolding—all flavored with the Flavorverse lore.</p>
+        <div id="combatWrapper">
+            <!-- Player Panel -->
+            <div class="panel" id="playerPanel" aria-labelledby="playerHeader">
+                <h3 id="playerHeader">Flavor Stats</h3>
+                <div class="stat-line"><span>Spicecraft</span><span id="spicecraft">10</span></div>
+                <div class="stat-line"><span>Umami</span><span id="umami">10</span></div>
+                <div class="stat-line"><span>Sweetness</span><span id="sweetness">10</span></div>
+                <div class="stat-line"><span>Heat Resistance</span><span id="heat">10</span></div>
+                <div class="stat-line"><span>Flavor Energy</span><span id="energy">3</span></div>
+                <div class="stat-line"><span>Turn</span><span id="turnDisplay">Player</span></div>
+                <div class="status-tags" id="playerStatus"></div>
+                <button class="small" id="endTurnBtn">End Turn</button>
+            </div>
+
+            <!-- Enemy Panel -->
+            <div class="panel" id="enemyPanel">
+                <h3>Enemy Encounter</h3>
+                <div class="enemy-name" id="enemyName">The Mayo Lich</div>
+                <div>HP: <span id="enemyHP">30</span></div>
+                <div>Archetype: <span id="enemyType">Condiment Undead</span></div>
+                <div class="status-tags" id="enemyStatus"></div>
+                <div style="margin-top:10px;">
+                    <strong>Intent:</strong> <span id="enemyIntent">...</span>
+                </div>
+            </div>
+
+            <!-- Hand & Log -->
+            <div class="panel" id="handPanel">
+                <h3>Your Hand</h3>
+                <div id="cards"></div>
+                <button class="primary" id="drawBtn">Draw Cards</button>
+                <h3 style="margin-top:20px;">Combat Log</h3>
+                <div id="log" aria-live="polite"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    Flavorverse Lore © Creative Chaos Collective. Prototype mechanics for demonstration only.
+</footer>
+
+<script>
+/* =========================
+   TABS SYSTEM
+   ========================= */
+document.querySelectorAll('.tabs').forEach(tabGroup => {
+    const buttons = tabGroup.querySelectorAll('button');
+    const groupName = tabGroup.dataset.tabGroup;
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.dataset.tab;
+            document.querySelectorAll('section .tab-panel').forEach(panel => {
+                // Only affect panels related to this tab group by checking sibling relationship
+                if (panel.parentElement.contains(tabGroup)) return;
             });
-        }
+            // Simpler: hide all sibling panels within same section
+            const panels = tabGroup.parentElement.querySelectorAll('.tab-panel');
+            panels.forEach(p => p.classList.remove('active'));
+            const activePanel = tabGroup.parentElement.querySelector(`.tab-panel[data-panel="${target}"]`);
+            if (activePanel) activePanel.classList.add('active');
+        });
+    });
+});
 
-        updateEnemyDisplay();
-    </script>
+/* =========================
+   COMBAT STYLES DATA
+   ========================= */
+const combatStylesData = [
+    { name: 'Spice-Fu', flavor: 'Capsaicin kinetic strikes & chili sweeps.', signature: 'Ghost Pepper Palm', tier: 'Core' },
+    { name: 'Umami-Jutsu', flavor: 'Slow overwhelming savory pressure.', signature: 'Broth Bind', tier: 'Core' },
+    { name: 'Sweet-Fist', flavor: 'Sticky disarming grapples.', signature: 'Sugar Snap Counter', tier: 'Adaptive' },
+    { name: 'Sour-Drunken Style', flavor: 'Erratic acidic feints.', signature: 'Vinegar Whirl', tier: 'Unstable' },
+    { name: 'Salt Kata', flavor: 'Mineral precision defensive matrix.', signature: 'Crystalline Guard', tier: 'Defensive' },
+];
+
+function renderCombatStyles() {
+    const container = document.getElementById('combatStyles');
+    combatStylesData.forEach(style => {
+        const div = document.createElement('div');
+        div.className = 'mini-card';
+        div.innerHTML = `<h4>${style.name}</h4>
+            <div style="font-size:.65rem; font-weight:700; opacity:.7;">Tier: ${style.tier}</div>
+            <p style="margin:6px 0;">${style.flavor}</p>
+            <div style="font-size:.65rem;"><strong>Signature:</strong> ${style.signature}</div>`;
+        container.appendChild(div);
+    });
+}
+renderCombatStyles();
+
+/* =========================
+   TAROT DECK DATA
+   ========================= */
+const tarotCards = [
+    // Major (sample subset expanded)
+    { name: 'The Chef', suit: 'Major', meaning: 'Creation through cuisine', reverse: 'Blocked inspiration', rarity: 'rare' },
+    { name: 'The Flame', suit: 'Major', meaning: 'Transformation & passion', reverse: 'Burnout / overheat', rarity: 'rare' },
+    { name: 'The Donkey', suit: 'Major', meaning: 'Chaotic emulsification', reverse: 'Flavor stagnation', rarity: 'legendary' },
+    { name: 'The Ladle', suit: 'Major', meaning: 'Truth extraction', reverse: 'Distorted perception', rarity: 'uncommon' },
+    { name: 'The Garnish', suit: 'Major', meaning: 'Detail & alignment', reverse: 'Superficial plating', rarity: 'uncommon' },
+    // Minor – Spices
+    { name: 'Capsaicin Spark', suit: 'Spices', meaning: 'Initiative & heat', reverse: 'Hesitation', rarity: 'common' },
+    { name: 'Chili Surge', suit: 'Spices', meaning: 'Aggressive push', reverse: 'Overextension', rarity: 'uncommon' },
+    // Minor – Herbs
+    { name: 'Basil Whisper', suit: 'Herbs', meaning: 'Fresh intuition', reverse: 'Clouded senses', rarity: 'common' },
+    { name: 'Sage Memory', suit: 'Herbs', meaning: 'Ancestral guidance', reverse: 'Detached tradition', rarity: 'uncommon' },
+    // Minor – Sauces
+    { name: 'Reduction Focus', suit: 'Sauces', meaning: 'Concentration & depth', reverse: 'Dilution', rarity: 'common' },
+    { name: 'Fermented Insight', suit: 'Sauces', meaning: 'Time-enhanced wisdom', reverse: 'Spoilage', rarity: 'rare' },
+    // Minor – Grains
+    { name: 'Rice Foundation', suit: 'Grains', meaning: 'Stability & base', reverse: 'Cracks forming', rarity: 'common' },
+    { name: 'Quinoa Shift', suit: 'Grains', meaning: 'Adaptability', reverse: 'Resistance to change', rarity: 'uncommon' },
+];
+
+function renderTarot(cards) {
+    const deckEl = document.getElementById('tarotDeck');
+    deckEl.innerHTML = '';
+    cards.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'mini-card';
+        el.innerHTML = `<h4>${c.name}</h4>
+            <div class="rarity ${c.rarity}">${c.rarity.toUpperCase()}</div>
+            <div style="font-size:.6rem; opacity:.7; margin:4px 0;"><strong>Suit:</strong> ${c.suit}</div>
+            <p style="margin:4px 0; font-size:.65rem;"><strong>Upright:</strong> ${c.meaning}</p>
+            <p style="margin:4px 0; font-size:.65rem;"><strong>Reverse:</strong> ${c.reverse}</p>`;
+        deckEl.appendChild(el);
+    });
+}
+renderTarot(tarotCards);
+
+document.getElementById('tarotSearch').addEventListener('input', filterTarot);
+document.getElementById('tarotSuit').addEventListener('change', filterTarot);
+
+function filterTarot() {
+    const term = document.getElementById('tarotSearch').value.toLowerCase();
+    const suit = document.getElementById('tarotSuit').value;
+    const filtered = tarotCards.filter(c => {
+        const matchesTerm = c.name.toLowerCase().includes(term) || c.meaning.toLowerCase().includes(term);
+        const matchesSuit = !suit || c.suit === suit;
+        return matchesTerm && matchesSuit;
+    });
+    renderTarot(filtered);
+}
+
+/* =========================
+   MINI GAME LOGIC
+   ========================= */
+
+const baseCards = [
+    { name: "Donkey Sauce Overdrive", cost: 2, type: "Power", effect: () => changeStat("spicecraft", 5), lore: "Chaotic emulsification surges Spicecraft.", rarity: "rare" },
+    { name: "Ghost Pepper Palm", cost: 1, type: "Attack", effect: () => damageEnemy(10), lore: "Capsaicin kinetic strike dealing intense heat damage.", rarity: "uncommon" },
+    { name: "Broth Bind", cost: 1, type: "Control", effect: () => changeStat("umami", 5), lore: "Savory tether amplifies Umami channel.", rarity: "common" },
+    { name: "Garnish Gambit", cost: 1, type: "Skill", effect: () => changeStat("sweetness", 5), lore: "Precision plating enlightens Sweetness metrics.", rarity: "uncommon" },
+    { name: "Reverse Sear", cost: 1, type: "Attack", effect: () => damageEnemy(7), lore: "Temporal flavor inversion causing structural weakening.", rarity: "common" },
+    { name: "Sugar Snap Counter", cost: 1, type: "Defense", effect: () => changeStat("heat", 5), lore: "Sticky sweetness forms reactive thermal shield.", rarity: "common" }
+];
+
+const enemies = [
+    { name: "The Mayo Lich", hp: 30, type: "Condiment Undead", ai: "slow-debuff" },
+    { name: "The Palate Void", hp: 40, type: "Entropy Entity", ai: "drain" },
+    { name: "Queen Fondant", hp: 35, type: "Dessert Sovereign", ai: "heal-buff" },
+    { name: "The Michelin Hydra", hp: 50, type: "Multi-Critic Beast", ai: "multi-attack" }
+];
+
+let currentEnemy = { ...enemies[0] };
+let energy = 3;
+let playerStatuses = [];
+let enemyStatuses = [];
+let turn = 'player'; // or 'enemy'
+
+function updateEnemyDisplay() {
+    document.getElementById("enemyName").innerText = currentEnemy.name;
+    document.getElementById("enemyHP").innerText = currentEnemy.hp;
+    document.getElementById("enemyType").innerText = currentEnemy.type;
+}
+
+function changeStat(stat, amount) {
+    const el = document.getElementById(stat);
+    let val = parseInt(el.innerText);
+    val += amount;
+    el.innerText = val;
+    log(`${stat} changed by ${amount}. New value = ${val}`);
+}
+
+function damageEnemy(amount) {
+    currentEnemy.hp -= amount;
+    log(`${currentEnemy.name} takes ${amount} flavor damage.`);
+    if (currentEnemy.hp <= 0) {
+        log(`<strong>${currentEnemy.name} defeated!</strong>`);
+        // Cycle random new enemy
+        currentEnemy = structuredClone(enemies[Math.floor(Math.random()*enemies.length)]);
+        log(`New enemy appears: <em>${currentEnemy.name}</em>`);
+    }
+    updateEnemyDisplay();
+}
+
+function drawCards() {
+    if (turn !== 'player') {
+        log("Cannot draw cards during enemy turn.");
+        return;
+    }
+    const hand = document.getElementById("cards");
+    hand.innerHTML = "";
+    const drawn = [];
+    while (drawn.length < 3) {
+        const card = baseCards[Math.floor(Math.random() * baseCards.length)];
+        drawn.push(card);
+    }
+    drawn.forEach(card => {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `${card.name}<div class="cost-badge">${card.cost}</div>`;
+        el.title = `${card.type} (${card.rarity}) — ${card.lore}`;
+        el.onclick = () => {
+            if (energy < card.cost) {
+                log("Not enough Flavor Energy!");
+                return;
+            }
+            energy -= card.cost;
+            updateEnergy();
+            card.effect();
+            el.style.display = "none";
+        };
+        document.getElementById("cards").appendChild(el);
+    });
+    log("Hand drawn.");
+}
+
+function updateEnergy() {
+    document.getElementById('energy').innerText = energy;
+}
+
+function log(msg) {
+    const logEl = document.getElementById('log');
+    const p = document.createElement('p');
+    p.innerHTML = msg;
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+}
+
+function nextTurn() {
+    if (turn === 'player') {
+        turn = 'enemy';
+        document.getElementById('turnDisplay').innerText = 'Enemy';
+        enemyAct();
+    } else {
+        turn = 'player';
+        energy = 3;
+        updateEnergy();
+        document.getElementById('turnDisplay').innerText = 'Player';
+        log("Player turn begins. Energy refreshed.");
+    }
+}
+
+function enemyAct() {
+    let actionMsg = '';
+    switch (currentEnemy.ai) {
+        case 'slow-debuff':
+            actionMsg = 'applies minor blandness (-1 Spicecraft)';
+            changeStat('spicecraft', -1);
+            break;
+        case 'drain':
+            actionMsg = 'drains Umami (-2) and heals (5)';
+            changeStat('umami', -2);
+            currentEnemy.hp += 5;
+            break;
+        case 'heal-buff':
+            actionMsg = 'frosts itself (+5 HP) and sweetens (+1 Sweetness)';
+            currentEnemy.hp += 5;
+            changeStat('sweetness', 1);
+            break;
+        case 'multi-attack':
+            actionMsg = 'executes triple critique (total 9 damage to Heat Resistance)';
+            changeStat('heat', -9);
+            break;
+        default:
+            actionMsg = 'stares menacingly.';
+    }
+    updateEnemyDisplay();
+    log(`${currentEnemy.name} ${actionMsg}`);
+    setTimeout(() => {
+        nextTurn(); // return to player
+    }, 900);
+}
+
+document.getElementById('drawBtn').addEventListener('click', drawCards);
+document.getElementById('endTurnBtn').addEventListener('click', () => {
+    if (turn === 'player') {
+        nextTurn();
+    } else {
+        log('Wait for the enemy to finish.');
+    }
+});
+
+// Initialize
+updateEnemyDisplay();
+updateEnergy();
+log("Encounter begins with The Mayo Lich. Draw cards and unleash flavor!");
+
+/* Utility: Structured clone polyfill fallback */
+function structuredClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+</script>
 </body>
 </html>
