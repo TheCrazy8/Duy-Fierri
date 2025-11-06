@@ -169,6 +169,10 @@ Flavorverse.Achievements = {
           if (stat) unlocked.push(stat);
         }
         break;
+        
+      default:
+        console.warn(`Unknown achievement event: ${event}`);
+        break;
     }
     
     return unlocked;

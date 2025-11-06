@@ -18,6 +18,8 @@ Flavorverse.TestHarness = {
   
   /**
    * Assert equality
+   * Note: Uses strict equality (===), so objects are compared by reference.
+   * Use assertTrue/assertFalse for object content comparison.
    */
   assertEqual(actual, expected, message) {
     if (actual !== expected) {
