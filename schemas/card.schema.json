@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://flavorverse.example.com/schemas/card.schema.json",
+  "title": "Flavorverse Card",
+  "description": "Schema for game cards in the Flavorverse",
+  "type": "object",
+  "required": ["id", "name", "cost", "type", "rarity"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique card identifier",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the card",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "cost": {
+      "type": "integer",
+      "description": "Energy cost to play the card",
+      "minimum": 0,
+      "maximum": 9
+    },
+    "type": {
+      "type": "string",
+      "description": "Card type/category",
+      "enum": ["Attack", "Skill", "Power", "Control", "Defense"]
+    },
+    "rarity": {
+      "type": "string",
+      "description": "Card rarity tier",
+      "enum": ["common", "uncommon", "rare", "legendary"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Flavor tags for synergy system",
+      "items": {
+        "type": "string",
+        "enum": ["Spice", "Umami", "Sweet", "Sour", "Salt", "Heat", "Cold"]
+      },
+      "uniqueItems": true
+    },
+    "effect": {
+      "type": "string",
+      "description": "Human-readable effect description"
+    },
+    "lore": {
+      "type": "string",
+      "description": "Flavor text describing the card",
+      "maxLength": 200
+    },
+    "image": {
+      "type": "string",
+      "description": "URL or path to card artwork",
+      "format": "uri"
+    },
+    "upgrades": {
+      "type": "object",
+      "description": "Possible card upgrades",
+      "properties": {
+        "cost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effect": {
+          "type": "string"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "description": "Requirements to play the card",
+      "properties": {
+        "minSpicecraft": {
+          "type": "integer"
+        },
+        "minUmami": {
+          "type": "integer"
+        },
+        "requiredStatuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
