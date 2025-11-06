@@ -617,9 +617,8 @@ function updateEnergy(){ qs('#energy').innerText = state.energy; }
 function log(msg){
   const logEl = qs('#log');
   const p = document.createElement('p');
-  // Secure: Use textContent to prevent XSS
-  // HTML formatting (like <strong>, <em>) is stripped for security
-  p.textContent = String(msg).replace(/<[^>]*>/g, '');
+  // Secure: Use textContent to prevent all XSS attacks
+  p.textContent = String(msg);
   logEl.appendChild(p);
   logEl.scrollTop = logEl.scrollHeight;
 }
