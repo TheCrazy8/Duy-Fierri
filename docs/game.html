@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>Duy Fierri: Flavor Skirmish - Card Battle Game</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Duy Fierri Flavorverse card battle prototype game">
+<meta name="color-scheme" content="light dark">
+<style>
+/* =========================
+   CORE THEME & RESET
+   ========================= */
+:root {
+    --bg: #fff8f0;
+    --bg-alt: #ffeedd;
+    --bg-soft: #fff4e4;
+    --bg-panel: #ffffff;
+    --bg-panel-alt: #ffe4c4;
+    --bg-accent-grad: linear-gradient(140deg,#ffeed8 0%,#ffe1c2 45%,#ffd0a3 100%);
+    --accent: #d94f04;
+    --accent-accent: #ff7a1a;
+    --accent-dark: #a63a02;
+    --accent-fade: rgba(217,79,4,.15);
+    --border: #d94f04;
+    --border-soft: #f3c28c;
+    --text: #2b1a12;
+    --text-soft: #5e483e;
+    --text-faint: #8c766a;
+    --radius-xs: 6px;
+    --radius-s: 9px;
+    --radius-m: 14px;
+    --radius-l: 20px;
+    --shadow: 0 4px 14px rgba(0,0,0,0.12);
+    --shadow-soft: 0 2px 8px rgba(0,0,0,.08);
+    --danger: #b30000;
+    --warn: #d97904;
+    --ok: #0b6e2d;
+    --info: #004c94;
+    --rare: #004c94;
+    --legendary: #8e006b;
+    --scrollbar: #d94f04;
+    --focus: 0 0 0 3px rgba(217,79,4,.35);
+}
+[data-theme="dark"] {
+    --bg: #1c130e;
+    --bg-alt: #261a14;
+    --bg-soft: #2d1f18;
+    --bg-panel: #2f221c;
+    --bg-panel-alt: #3b281d;
+    --bg-accent-grad: linear-gradient(140deg,#3b281d 0%,#3f291a 50%,#4a2d18 100%);
+    --accent: #ff7a1a;
+    --accent-accent: #ff9b42;
+    --accent-dark: #c95100;
+    --accent-fade: rgba(255,122,26,.18);
+    --border: #ff7a1a;
+    --border-soft: #744421;
+    --text: #f8e7dc;
+    --text-soft: #d7c1b5;
+    --text-faint: #9f887c;
+    --shadow: 0 4px 18px rgba(0,0,0,.6);
+    --legendary: #ff5cc9;
+    --rare: #5dc0ff;
+    --scrollbar: #ff7a1a;
+    --danger: #ff4e4e;
+}
+* { box-sizing: border-box; }
+body {
+    margin:0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent); color: #fff; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-soft); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 30px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
+a { color: var(--accent-dark); text-decoration: none; }
+a:hover { color: var(--accent); }
+h1,h2,h3,h4 { font-family: 'Segoe UI', system-ui, sans-serif; }
+h1 {
+    margin:0 0 10px;
+    font-size: clamp(2rem,5vw,3.3rem);
+    letter-spacing:.5px;
+    color: var(--accent);
+    text-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+h2 {
+    font-size: 1.7rem;
+    margin:0 0 14px;
+    color: var(--accent-dark);
+    display:flex; align-items:center; gap:.5ch;
+    letter-spacing:.5px;
+}
+h3 {
+    margin:0 0 12px;
+    font-size:1.2rem;
+    color: var(--accent-dark);
+}
+
+header {
+    padding: 20px 20px 14px;
+    text-align:center;
+    background: var(--bg-accent-grad);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top:0;
+    z-index: 200;
+    backdrop-filter: blur(6px);
+}
+header .tagline {
+    font-style: italic;
+    font-size:.9rem; opacity:.85;
+}
+
+.utility-chip {
+    background: var(--bg-panel);
+    border:1px solid var(--border);
+    color: var(--text);
+    padding:6px 12px;
+    border-radius:30px;
+    font-size:.7rem;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-weight:600;
+    box-shadow: var(--shadow-soft);
+    transition:.25s;
+    margin: 6px 4px;
+}
+.utility-chip:hover { background: var(--accent); color:#fff; }
+.utility-chip:focus-visible { outline:none; box-shadow: var(--focus); }
+
+main {
+    max-width: 1420px;
+    margin:0 auto;
+    padding:30px 20px 60px;
+}
+
+.badge {
+    display:inline-block;
+    background: var(--accent);
+    color:#fff;
+    font-size:.55rem;
+    padding:3px 7px;
+    letter-spacing:.5px;
+    border-radius: 40px;
+    font-weight:700;
+    margin-left:4px;
+}
+
+#combatWrapper {
+    display:grid;
+    gap:22px;
+}
+@media (min-width: 1180px) {
+    #combatWrapper {
+        grid-template-columns: 360px 1fr 340px 320px;
+        align-items:start;
+    }
+}
+.panel {
+    background: var(--bg-panel);
+    border:2px solid var(--border);
+    border-radius: var(--radius-m);
+    padding: 16px 18px 24px;
+    box-shadow: var(--shadow);
+    position:relative;
+}
+.stat-line { display:flex; justify-content:space-between; margin:4px 0; font-size:.8rem; }
+#log {
+    max-height: 280px;
+    overflow-y:auto;
+    font-size:.68rem;
+    padding-right:4px;
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    border-radius: var(--radius-s);
+    padding: 10px;
+}
+#log p { margin: 2px 0 4px; line-height:1.3; }
+#log p strong { color: var(--accent-dark); }
+.card {
+    display:inline-block;
+    margin: 8px;
+    padding: 12px 13px 16px;
+    border:1px solid #333;
+    border-radius: 12px;
+    background: var(--bg-panel-alt);
+    cursor:pointer;
+    min-width: 155px;
+    max-width: 195px;
+    font-size:.72rem;
+    position:relative;
+    transition:.25s;
+    line-height:1.15;
+}
+.card:hover { background: var(--accent-accent); color:#1c120d; transform: translateY(-5px) rotate(-1deg); }
+.card:focus-visible { outline:none; box-shadow: var(--focus); }
+.card .cost-badge {
+    position:absolute;
+    top:-7px; right:-7px;
+    background: var(--accent);
+    color:#fff;
+    padding:5px 8px;
+    font-size:.6rem;
+    border-radius:50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.card[data-rarity="legendary"] { border-color: var(--legendary); box-shadow: 0 0 0 2px var(--legendary),0 4px 14px -2px rgba(0,0,0,.4); }
+.card[data-rarity="rare"] { border-color: var(--rare); }
+.card[data-rarity="uncommon"] { border-color: var(--ok); }
+
+.deck-stats {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:4px;
+}
+.deck-stats span {
+    background: var(--accent-fade);
+    padding:4px 7px;
+    font-size:.55rem;
+    letter-spacing:.5px;
+    border-radius: 40px;
+    font-weight:700;
+}
+
+.status-tags span {
+    display:inline-block;
+    background: var(--accent-fade);
+    padding:3px 8px;
+    margin:2px 6px 2px 0;
+    border-radius: 5px;
+    font-size:.55rem;
+    letter-spacing:.5px;
+    font-weight:600;
+    border:1px solid var(--border-soft);
+    position:relative;
+}
+.status-tags span[data-stack]:after {
+    content: attr(data-stack);
+    position:absolute;
+    top:-6px; right:-6px;
+    background: var(--accent);
+    color:#fff;
+    font-size:.55rem;
+    padding:2px 5px;
+    border-radius: 40px;
+    font-weight:700;
+}
+
+button.primary {
+    padding: 12px 22px;
+    font-size:.9rem;
+    background: var(--accent);
+    color:#fff;
+    border:none;
+    border-radius: 10px;
+    cursor:pointer;
+    font-weight:600;
+    letter-spacing:.5px;
+    box-shadow: 0 3px 8px rgba(0,0,0,.25);
+    transition: background .25s, transform .25s;
+}
+button.primary:hover { background: var(--accent-dark); transform: translateY(-2px); }
+button.primary:focus-visible { outline:none; box-shadow: var(--focus); }
+
+button.secondary {
+    background: var(--bg-panel-alt);
+    color: var(--text);
+    padding:8px 14px;
+    border:1px solid var(--border);
+    font-size:.7rem;
+    border-radius: var(--radius-s);
+    font-weight:600;
+    letter-spacing:.5px;
+    cursor:pointer;
+    transition:.25s;
+}
+button.secondary:hover { background: var(--accent); color:#fff; }
+button.secondary:focus-visible { outline:none; box-shadow: var(--focus); }
+
+button.small {
+    font-size:.6rem;
+    padding:6px 10px;
+    background:#333;
+    color:#fff;
+    border:none;
+    border-radius: var(--radius-xs);
+    cursor:pointer;
+    letter-spacing:.5px;
+    font-weight:600;
+}
+button.small:hover { background:#111; }
+
+.toggle-line {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:10px 0;
+}
+
+textarea {
+    width:100%;
+    min-height:120px;
+    resize:vertical;
+    padding:10px 12px;
+    font-family:ui-monospace,Consolas,monospace;
+    font-size:.74rem;
+    border:1px solid var(--border-soft);
+    border-radius: var(--radius-s);
+    background: var(--bg-soft);
+    color: var(--text);
+}
+textarea:focus-visible { outline:none; box-shadow: var(--focus); }
+
+input[type="text"], input[type="number"], select {
+    padding:6px 8px;
+    font-size:.7rem;
+    border:1px solid var(--border);
+    border-radius: var(--radius-s);
+    background: var(--bg-soft);
+    color: var(--text);
+}
+input:focus-visible, select:focus-visible { outline:none; box-shadow: var(--focus); }
+
+footer {
+    margin-top:40px;
+    padding:30px 20px;
+    text-align:center;
+    font-size:.7rem;
+    opacity:.7;
+}
+
+[data-theme="dark"] .card:hover { color:#1a120e; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 Flavor Skirmish</h1>
+  <p class="tagline">Duy Fierri Card Battle Prototype</p>
+  <div>
+    <button class="utility-chip" id="themeToggle" aria-pressed="false">🌗 Theme</button>
+    <a href="index.html" class="utility-chip">📖 Back to Lore</a>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>🎮 Mini Game: Flavor Skirmish <span class="badge">PROTOTYPE</span></h2>
+    <p>This prototype demonstrates: deck draw, energy costs, enemy AI archetypes, emergent status effects, card rarities, search, and (experimental) export/import tooling.</p>
+    <div id="combatWrapper">
+      <!-- Player Panel -->
+      <div class="panel" id="playerPanel" aria-labelledby="playerHeader">
+        <h3 id="playerHeader">Flavor Stats</h3>
+        <div class="stat-line"><span>Spicecraft</span><span id="spicecraft">10</span></div>
+        <div class="stat-line"><span>Umami</span><span id="umami">10</span></div>
+        <div class="stat-line"><span>Sweetness</span><span id="sweetness">10</span></div>
+        <div class="stat-line"><span>Heat Resistance</span><span id="heat">10</span></div>
+        <div class="stat-line"><span>Flavor Energy</span><span id="energy">3</span></div>
+        <div class="stat-line"><span>Turn</span><span id="turnDisplay">Player</span></div>
+        <div class="status-tags" id="playerStatus"></div>
+        <div class="toggle-line">
+          <button class="small" id="endTurnBtn">End Turn</button>
+          <button class="small" id="shuffleBtn">Shuffle</button>
+          <button class="small" id="exportDeckBtn">Export Deck</button>
+        </div>
+        <textarea id="importDeckArea" placeholder="Paste deck JSON here & click Import"></textarea>
+        <button class="secondary" id="importDeckBtn">Import Deck</button>
+      </div>
+
+      <!-- Enemy Panel -->
+      <div class="panel" id="enemyPanel">
+        <h3>Enemy Encounter</h3>
+        <div class="enemy-name" id="enemyName">The Mayo Lich</div>
+        <div>HP: <span id="enemyHP">30</span></div>
+        <div>Archetype: <span id="enemyType">Condiment Undead</span></div>
+        <div class="status-tags" id="enemyStatus"></div>
+        <div style="margin-top:10px;"><strong>Intent:</strong> <span id="enemyIntent">…</span></div>
+        <button class="secondary" id="forceEnemyAction" style="margin-top:10px;">Force Action</button>
+      </div>
+
+      <!-- Hand & Draw -->
+      <div class="panel" id="handPanel">
+        <h3>Your Hand</h3>
+        <div id="cards"></div>
+        <div class="toggle-line">
+          <button class="primary" id="drawBtn">Draw (3)</button>
+          <button class="secondary" id="discardAllBtn">Discard Hand</button>
+        </div>
+        <h3 style="margin-top:24px;">Deck Zones</h3>
+        <div class="deck-stats" id="deckStats"></div>
+        <p style="margin:6px 0 4px;"><strong>Draw Pile:</strong> <span id="drawCount"></span> | <strong>Discard:</strong> <span id="discardCount"></span> | <strong>Exhaust:</strong> <span id="exhaustCount"></span></p>
+      </div>
+
+      <!-- Log & Builder -->
+      <div class="panel" id="logPanel">
+        <h3>Combat Log</h3>
+        <div id="log" aria-live="polite"></div>
+        <h3 style="margin-top:20px;">Card Builder</h3>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <input type="text" id="newCardName" placeholder="Card Name" style="padding:6px 8px; font-size:.7rem;">
+          <select id="newCardType" style="padding:6px 8px; font-size:.7rem;">
+            <option>Attack</option>
+            <option>Skill</option>
+            <option>Power</option>
+            <option>Control</option>
+            <option>Defense</option>
+          </select>
+          <select id="newCardRarity" style="padding:6px 8px; font-size:.7rem;">
+            <option>common</option>
+            <option>uncommon</option>
+            <option>rare</option>
+            <option>legendary</option>
+          </select>
+          <input type="number" id="newCardCost" placeholder="Cost" min="0" max="9" value="1" style="padding:6px 8px; font-size:.7rem;">
+          <textarea id="newCardLore" placeholder="Flavor / effect description (purely descriptive)"></textarea>
+          <button class="secondary" id="addCardBtn">Add Custom Card</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Flavorverse Lore © Creative Chaos Collective. All dishes are metaphysical constructs. Prototype game mechanics for demonstration only. 
+</footer>
+
+<script>
+/* =======================================================
+   UTILITIES & GLOBAL STATE
+   ======================================================= */
+const qs = sel => document.querySelector(sel);
+const qsa = sel => Array.from(document.querySelectorAll(sel));
+const state = {
+  theme: 'light',
+  deck: [],
+  drawPile: [],
+  discardPile: [],
+  exhaustPile: [],
+  baseEnergy: 3,
+  maxHand: 3,
+  enemy: null,
+  turn: 'player',
+  statuses: { player: [], enemy: [] }
+};
+
+const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+function structuredClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+/* =======================================================
+   THEME
+   ======================================================= */
+const themeToggle = qs('#themeToggle');
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  state.theme = t;
+  themeToggle.setAttribute('aria-pressed', t === 'dark');
+}
+themeToggle.addEventListener('click', () => {
+  applyTheme(state.theme === 'light' ? 'dark' : 'light');
+});
+applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+/* =======================================================
+   ENEMY COMPENDIUM
+   ======================================================= */
+const enemyCompendiumData = [
+  { name: "The Mayo Lich", trait:"Condiment", hp:30, threat:"Low", blurb:"Undead emulsion necromancer.", ai:"slow-debuff" },
+  { name: "The Palate Void", trait:"Entropy", hp:40, threat:"Medium", blurb:"Hunger entropy singularity.", ai:"drain" },
+  { name: "Queen Fondant", trait:"Dessert", hp:35, threat:"Medium", blurb:"Frosting monarchy of sweetness control.", ai:"heal-buff" },
+  { name: "The Michelin Hydra", trait:"Critic", hp:50, threat:"High", blurb:"Triple-headed evaluative terror.", ai:"multi-attack" },
+  { name: "Sous Void", trait:"Entropy", hp:42, threat:"High", blurb:"Black hole in a chef's hat.", ai:"drain" },
+  { name: "Crystalline Salt Titan", trait:"Condiment", hp:55, threat:"High", blurb:"Mineralized density crusher.", ai:"slow-debuff" },
+  { name: "Nullsalt Exorcist", trait:"Entropy", hp:28, threat:"Special", blurb:"Anti-flavor purifier entity.", ai:"drain" }
+];
+
+/* =======================================================
+   GAME SYSTEM
+   ======================================================= */
+const baseCards = [
+  { id:'donkey-overdrive', name:"Donkey Sauce Overdrive", cost:2, type:"Power", rarity:"rare", effect:"spice +5", play:()=> changeStat("spicecraft",5), lore:"Chaotic emulsification surges Spicecraft." },
+  { id:'ghost-palm', name:"Ghost Pepper Palm", cost:1, type:"Attack", rarity:"uncommon", effect:"damage 10", play:()=> damageEnemy(10), lore:"Capsaicin kinetic strike." },
+  { id:'broth-bind', name:"Broth Bind", cost:1, type:"Control", rarity:"common", effect:"umami +5", play:()=> changeStat("umami",5), lore:"Savory tether amplifies Umami." },
+  { id:'garnish-gambit', name:"Garnish Gambit", cost:1, type:"Skill", rarity:"uncommon", effect:"sweet +5", play:()=> changeStat("sweetness",5), lore:"Precision plating enlightens Sweetness." },
+  { id:'reverse-sear', name:"Reverse Sear", cost:1, type:"Attack", rarity:"common", effect:"damage 7", play:()=> damageEnemy(7), lore:"Temporal flavor inversion." },
+  { id:'sugar-counter', name:"Sugar Snap Counter", cost:1, type:"Defense", rarity:"common", effect:"heat +5", play:()=> changeStat("heat",5), lore:"Sticky sweetness reactive shield." },
+  { id:'umami-wave', name:"Umami Wave", cost:2, type:"Attack", rarity:"rare", effect:"damage 8 & umami +2", play:()=> { damageEnemy(8); changeStat("umami",2);} , lore:"Savory wave deals damage and nourishes." },
+  { id:'eclipse-flavor', name:"Ecliptique Infusion", cost:3, type:"Power", rarity:"legendary", effect:"+7 spice +7 umami", play:()=> { changeStat("spicecraft",7); changeStat("umami",7);} , lore:"Harnesses ending flavor harmonic." }
+];
+
+let currentEnemy = structuredClone(enemyCompendiumData[0]);
+
+function resetDeck(){
+  state.deck = structuredClone(baseCards);
+  state.drawPile = shuffle(structuredClone(state.deck));
+  state.discardPile = [];
+  state.exhaustPile = [];
+  updateDeckStats();
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()* (i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function updateDeckStats(){
+  qs('#drawCount').textContent = state.drawPile.length;
+  qs('#discardCount').textContent = state.discardPile.length;
+  qs('#exhaustCount').textContent = state.exhaustPile.length;
+  const typeCounts = {};
+  state.deck.forEach(c=> { typeCounts[c.type] = (typeCounts[c.type]||0)+1; });
+  const statsEl = qs('#deckStats');
+  statsEl.innerHTML = Object.entries(typeCounts).map(([k,v])=> `<span>${k}:${v}</span>`).join('');
+}
+
+function addToDiscard(card){
+  state.discardPile.push(card);
+  updateDeckStats();
+}
+function drawHand(){
+  if(state.turn !== 'player'){ log("Cannot draw during enemy turn."); return; }
+  const handEl = qs('#cards');
+  handEl.innerHTML = '';
+  for(let i=0;i<state.maxHand;i++){
+    if(state.drawPile.length === 0){
+      reshuffleFromDiscard();
+      if(state.drawPile.length === 0) { log("No cards left to draw."); break; }
+    }
+    const card = state.drawPile.shift();
+    renderCard(card, handEl);
+  }
+  updateDeckStats();
+  log("Hand drawn.");
+}
+function reshuffleFromDiscard(){
+  if(state.discardPile.length){
+    state.drawPile = shuffle(state.discardPile.splice(0));
+    log("Reshuffled discard into draw pile.");
+  }
+}
+
+function renderCard(card, container){
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.setAttribute('tabindex','0');
+  el.dataset.rarity = card.rarity;
+  el.innerHTML = `<strong>${card.name}</strong><div class="cost-badge">${card.cost}</div>
+    <div style="margin-top:6px; font-size:.58rem; letter-spacing:.5px; font-weight:600;">${card.type.toUpperCase()} • ${card.rarity.toUpperCase()}</div>
+    <div style="margin-top:4px; font-size:.6rem; opacity:.85;">${card.lore}</div>`;
+  const playCard = () => {
+    if(state.turn !== 'player'){ log("Not your turn."); return; }
+    if(state.energy < card.cost){ log("Not enough Flavor Energy!"); return; }
+    state.energy -= card.cost; updateEnergy();
+    card.play();
+    addToDiscard(card);
+    el.remove();
+  };
+  el.addEventListener('click', playCard);
+  el.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playCard(); }
+  });
+  container.appendChild(el);
+}
+
+function changeStat(stat, amount){
+  const el = qs('#'+stat);
+  let val = parseInt(el.innerText,10);
+  val += amount;
+  el.innerText = val;
+  log(`${stat} ${amount>0?'+':''}${amount} → ${val}`);
+}
+
+function damageEnemy(amount){
+  currentEnemy.hp -= amount;
+  log(`${currentEnemy.name} takes ${amount} flavor damage.`);
+  if(currentEnemy.hp <=0){
+    log(`<strong>${currentEnemy.name} defeated!</strong>`);
+    spawnRandomEnemy();
+  }
+  updateEnemyDisplay();
+}
+
+function spawnRandomEnemy(){
+  currentEnemy = structuredClone(rand(enemyCompendiumData));
+  if(currentEnemy.hp < 20) currentEnemy.hp += 10;
+  updateEnemyDisplay();
+  log(`New enemy emerges: <em>${currentEnemy.name}</em>`);
+}
+
+function updateEnemyDisplay(){
+  qs('#enemyName').innerText = currentEnemy.name;
+  qs('#enemyHP').innerText = currentEnemy.hp;
+  qs('#enemyType').innerText = currentEnemy.trait + " " + (currentEnemy.type? currentEnemy.type : "Entity");
+  qs('#enemyIntent').innerText = generateEnemyIntent();
+}
+
+function generateEnemyIntent(){
+  switch(currentEnemy.ai){
+    case 'slow-debuff': return 'Applying Blandness (-Spicecraft)';
+    case 'drain': return 'Draining Umami & Self-Healing';
+    case 'heal-buff': return 'Frosting Restoration + Sweet Buff';
+    case 'multi-attack': return 'Multi Critique Strikes';
+    default: return '???';
+  }
+}
+
+function updateEnergy(){ qs('#energy').innerText = state.energy; }
+
+function log(msg){
+  const logEl = qs('#log');
+  const p = document.createElement('p');
+  // Secure: Use textContent to prevent all XSS attacks
+  p.textContent = String(msg);
+  logEl.appendChild(p);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function nextTurn(){
+  if(state.turn === 'player'){
+    state.turn = 'enemy';
+    qs('#turnDisplay').innerText = 'Enemy';
+    enemyAct();
+  } else {
+    state.turn = 'player';
+    state.energy = state.baseEnergy;
+    updateEnergy();
+    qs('#turnDisplay').innerText = 'Player';
+    log("Player turn: Energy refreshed.");
+  }
+}
+
+function applyPlayerStatus(name, stacks=1, duration=2){
+  const existing = state.statuses.player.find(s=> s.name===name);
+  if(existing){ existing.stacks += stacks; existing.duration = Math.max(existing.duration,duration); }
+  else state.statuses.player.push({ name, stacks, duration });
+  renderStatuses();
+}
+function applyEnemyStatus(name, stacks=1, duration=2){
+  const existing = state.statuses.enemy.find(s=> s.name===name);
+  if(existing){ existing.stacks += stacks; existing.duration = Math.max(existing.duration,duration); }
+  else state.statuses.enemy.push({ name, stacks, duration });
+  renderStatuses();
+}
+
+function renderStatuses(){
+  const playerWrap = qs('#playerStatus');
+  const enemyWrap = qs('#enemyStatus');
+  playerWrap.innerHTML = '';
+  enemyWrap.innerHTML = '';
+  state.statuses.player.forEach(s=>{
+    const span = document.createElement('span');
+    span.textContent = s.name;
+    span.dataset.stack = s.stacks;
+    span.title = `${s.name} (${s.stacks}) Dur:${s.duration}`;
+    playerWrap.appendChild(span);
+  });
+  state.statuses.enemy.forEach(s=>{
+    const span = document.createElement('span');
+    span.textContent = s.name;
+    span.dataset.stack = s.stacks;
+    span.title = `${s.name} (${s.stacks}) Dur:${s.duration}`;
+    enemyWrap.appendChild(span);
+  });
+}
+
+function tickStatuses(side){
+  state.statuses[side].forEach(s=> {
+    if(s.name === 'Burn') {
+      if(side==='enemy') {
+        currentEnemy.hp -= s.stacks;
+        log(`${currentEnemy.name} suffers ${s.stacks} burn.`);
+      } else {
+        changeStat('heat', -1);
+        log(`Heat Resistance eroded by burn.`);
+      }
+    }
+    s.duration -=1;
+  });
+  state.statuses[side] = state.statuses[side].filter(s=> s.duration >0);
+  renderStatuses();
+}
+
+function enemyAct(){
+  let actionMsg = '';
+  switch(currentEnemy.ai){
+    case 'slow-debuff':
+      actionMsg = 'applies Blandness (-1 Spicecraft) & 1 Burn';
+      changeStat('spicecraft', -1);
+      applyPlayerStatus('Burn',1,2);
+      break;
+    case 'drain':
+      actionMsg = 'drains Umami (-2) & heals (5) & applies Sap';
+      changeStat('umami', -2);
+      currentEnemy.hp += 5;
+      applyPlayerStatus('Sap',1,2);
+      break;
+    case 'heal-buff':
+      actionMsg = 'frosts itself (+5 HP) & sweetens you (-1 Sweetness)';
+      currentEnemy.hp +=5;
+      changeStat('sweetness', -1);
+      break;
+    case 'multi-attack':
+      actionMsg = 'executes triple critique (-3 Heat Resistance & Burn x2)';
+      changeStat('heat', -3);
+      applyPlayerStatus('Burn',2,3);
+      break;
+    default:
+      actionMsg = 'stares menacingly.';
+  }
+  updateEnemyDisplay();
+  log(`${currentEnemy.name} ${actionMsg}`);
+  tickStatuses('player');
+  setTimeout(()=> {
+    nextTurn();
+  }, 900);
+}
+
+qs('#drawBtn').addEventListener('click', drawHand);
+qs('#endTurnBtn').addEventListener('click', () => {
+  if(state.turn === 'player'){
+    tickStatuses('enemy');
+    nextTurn();
+  } else {
+    log('Enemy still resolving.');
+  }
+});
+qs('#discardAllBtn').addEventListener('click', () => {
+  const handEl = qs('#cards');
+  Array.from(handEl.children).forEach(c=>{
+    const cardName = c.querySelector('strong')?.innerText;
+    const cardObj = state.deck.find(cd=> cd.name===cardName);
+    if(cardObj) addToDiscard(cardObj);
+  });
+  handEl.innerHTML='';
+  log('Hand discarded.');
+});
+qs('#shuffleBtn').addEventListener('click', () => {
+  state.drawPile = shuffle(state.drawPile);
+  log('Draw pile shuffled.');
+});
+qs('#forceEnemyAction').addEventListener('click', () => {
+  if(state.turn === 'enemy'){
+    enemyAct();
+  } else {
+    log("Not enemy phase.");
+  }
+});
+
+/* Card Builder */
+qs('#addCardBtn').addEventListener('click', () => {
+  const name = qs('#newCardName').value.trim();
+  const type = qs('#newCardType').value;
+  const rarity = qs('#newCardRarity').value;
+  const cost = parseInt(qs('#newCardCost').value,10) || 0;
+  const lore = qs('#newCardLore').value.trim() || 'Custom infusion.';
+  if(!name){ alert("Name required"); return; }
+  const newCard = {
+    id: name.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now(),
+    name, cost, type, rarity,
+    effect:"custom effect",
+    play:()=> { log(`Custom card '${name}' effect placeholder executed.`); },
+    lore
+  };
+  state.deck.push(newCard);
+  state.drawPile.push(newCard);
+  log(`Added custom card: ${name}`);
+  updateDeckStats();
+  qs('#newCardName').value='';
+  qs('#newCardLore').value='';
+});
+
+qs('#exportDeckBtn').addEventListener('click', () => {
+  const deckData = state.deck.map(({play,...rest})=>rest);
+  qs('#importDeckArea').value = JSON.stringify(deckData,null,2);
+  log("Deck exported to textarea.");
+});
+qs('#importDeckBtn').addEventListener('click', () => {
+  try {
+    const parsed = JSON.parse(qs('#importDeckArea').value);
+    if(!Array.isArray(parsed)) throw new Error('Invalid deck format.');
+    state.deck = parsed.map(c=> ({
+      ...c,
+      play: ()=> { log(`Imported card '${c.name}' placeholder executed.`); }
+    }));
+    state.drawPile = shuffle(structuredClone(state.deck));
+    state.discardPile = [];
+    state.exhaustPile = [];
+    updateDeckStats();
+    log("Deck imported & shuffled.");
+  } catch(e){
+    alert("Import failed: "+e.message);
+  }
+});
+
+/* INITIALIZATION */
+function initGame(){
+  resetDeck();
+  spawnRandomEnemy();
+  state.energy = state.baseEnergy;
+  updateEnergy();
+  log("Encounter begins with " + currentEnemy.name + ". Draw cards and unleash flavor!");
+}
+initGame();
+
+/* KEYBOARD SHORTCUTS */
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.key==='d'){ e.preventDefault(); drawHand(); }
+  if(e.ctrlKey && e.key==='e'){ e.preventDefault(); qs('#endTurnBtn').click(); }
+  if(e.ctrlKey && e.key==='t'){ e.preventDefault(); themeToggle.click(); }
+});
+
+</script>
+</body>
+</html>
